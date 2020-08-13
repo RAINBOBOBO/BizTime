@@ -2,10 +2,13 @@
 
 const express = require("express");
 const { NotFoundError } = require("./expressError");
+const companiesRoutes = require("./routes/companies");
 
 const app = express();
 
 app.use(express.json());
+
+app.use("/companies", companiesRoutes);
 
 
 /** Handle 404 errors -- this matches everything */
