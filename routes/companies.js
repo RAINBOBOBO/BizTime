@@ -6,7 +6,7 @@ const { json } = require("express");
 const router = new express.Router();
 
 // Returns list of companies, like {companies: [{code, name}, ...]}
-router.get("/", async function(req, res, next) {
+router.get("/", async function (req, res, next) {
   try {
     const results = await db.query(
       `SELECT code, name, description
@@ -14,14 +14,14 @@ router.get("/", async function(req, res, next) {
     );
     const companies = results.rows;
     return res.json({ companies });
-  } catch(err) {
+  } catch (err) {
     next(err);
   }
 })
 
 // Return obj of company: {company: {code, name, description}}
 // If the company given cannot be found, this should return a 404 status response.
-router.get("/:code", async function(req, res, next) {
+router.get("/:code", async function (req, res, next) {
   try {
     const result = await db.query(
       `SELECT code, name, description
@@ -32,7 +32,7 @@ router.get("/:code", async function(req, res, next) {
     const company = result.rows[0];
     if (company.length === 0) throw new NotFoundError();
     return res.json({ company });
-  } catch(err) {
+  } catch (err) {
     next(err);
   }
 });
@@ -40,7 +40,7 @@ router.get("/:code", async function(req, res, next) {
 // Adds a company
 // Needs to be given JSON like: {code, name, description}
 // Returns obj of new company: {company: {code, name, description}}
-router.post("/", async function(req, res, next) {
+router.post("/", async function (req, res, next) {
   try {
     const { code, name, description } = req.body;
     const result = await db.query(
@@ -51,7 +51,7 @@ router.post("/", async function(req, res, next) {
     );
     const company = result.rows[0];
     return res.status(201).json({ company });
-  } catch(err) {
+  } catch (err) {
     next(err);
   }
 });
@@ -60,9 +60,10 @@ router.post("/", async function(req, res, next) {
 // Should return 404 if company cannot be found.
 // Needs to be given JSON like: {name, description}
 // Returns update company object: {company: {code, name, description}}
-router.put("/:code", async function(req, res, next) {
+router.put("/:code", async function (req, res, next) {
   try {
-    const { code, name, description } = req.body;
+    const code = req.params.code;
+    const { name, description } = req.body;
     const result = await db.query(
       `UPDATE companies
       SET name=$2, description=$3
@@ -73,7 +74,7 @@ router.put("/:code", async function(req, res, next) {
     if (result.rows.length === 0) throw new NotFoundError();
     const company = result.rows[0];
     return res.json({ company });
-  } catch(err) {
+  } catch (err) {
     next(err);
   }
 });
@@ -81,15 +82,17 @@ router.put("/:code", async function(req, res, next) {
 // Deletes company.
 // Should return 404 if company cannot be found.
 // Returns {status: "deleted"}
-router.delete("/:code", async function(req, res, next) {
+router.delete("/:code", async function (req, res, next) {
   try {
-    await db.query(
+    const result = await db.query(
       `DELETE FROM companies
-      WHERE code = $1`,
+      WHERE code = $1
+      RETURNING code`,
       [req.params.code]
     );
-    return res.json({status: "deleted"});
-  } catch(err) {
+    if (result.rows.length === 0) throw new NotFoundError();
+    return res.json({ status: "deleted" });
+  } catch (err) {
     next(err);
   }
 });
