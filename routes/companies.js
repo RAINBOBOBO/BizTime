@@ -43,6 +43,7 @@ router.get("/:code", async function (req, res, next) {
 
     const company = cResult.rows[0];
     if (company === undefined) throw new NotFoundError();
+    
     const invoices = iResults.rows.map(invoice => invoice.id);
     company.invoices = invoices;
     return res.json({ company });
