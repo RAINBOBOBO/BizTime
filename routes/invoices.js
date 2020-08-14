@@ -13,7 +13,7 @@ const router = new express.Router();
 router.get("/", async function (req, res, next) {
 	try {
 		const results = await db.query(
-			`SELECT id, comp_code, amt, paid, add_date, paid_date
+			`SELECT id, comp_code
             FROM invoices`);
 
 		let invoices = results.rows;
@@ -100,8 +100,8 @@ router.put("/:id", async function (req, res, next) {
             RETURNING id, comp_code, amt, paid, add_date, paid_date`,
 			[amt, id],
 		);
-		if (result.rowCount === 0) throw new NotFoundError();
 		const invoice = result.rows[0];
+		if (invoice === undefined) throw new NotFoundError();
 		return res.json({ invoice });
 	} catch (err) {
 		return next(err);
@@ -124,7 +124,7 @@ router.delete("/:id", async function (req, res, next) {
             RETURNING id`,
 			[id],
 		);
-
+// FIX THIS
 		if (result.rowCount === 0) throw new NotFoundError();
 
 		return res.json({ status: "Deleted" });
