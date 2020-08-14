@@ -66,9 +66,9 @@ router.post("/", async function (req, res, next) {
       RETURNING code, name, description`,
       [code, name, description]
     );
-    console.log("this is result:", result);
+    // console.log("this is result:", result);
     const company = result.rows[0];
-    console.log("this is company:", company);
+    // console.log("this is company:", company);
     return res.status(201).json({ company });
   } catch (err) {
     return next(err);
